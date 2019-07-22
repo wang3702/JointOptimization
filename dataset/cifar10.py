@@ -8,7 +8,7 @@ def get_cifar10(root, args, train=True,
                  download=False):
 
     base_dataset = torchvision.datasets.CIFAR10(root, train=train, download=download)
-    train_idxs, val_idxs = train_val_split(base_dataset.train_labels)
+    train_idxs, val_idxs = train_val_split(base_dataset.targets)
 
     train_dataset = CIFAR10_train(root, train_idxs, args, train=train, transform=transform_train)
     if args.asym:
@@ -45,6 +45,8 @@ class CIFAR10_train(torchvision.datasets.CIFAR10):
         super(CIFAR10_train, self).__init__(root, train=train,
                  transform=transform, target_transform=target_transform,
                  download=download)
+        self.train_data=self.data
+        self.train_labels=self.targets
         self.args = args
         if indexs is not None:
             self.train_data = self.train_data[indexs]
@@ -126,7 +128,8 @@ class CIFAR10_train(torchvision.datasets.CIFAR10):
             target = self.target_transform(target)
 
         return img, target, soft_target, index
-
+    def __len__(self):
+        return len(self.train_labels)
 
 class CIFAR10_val(torchvision.datasets.CIFAR10):
 
@@ -136,6 +139,7 @@ class CIFAR10_val(torchvision.datasets.CIFAR10):
         super(CIFAR10_val, self).__init__(root, train=train,
                  transform=transform, target_transform=target_transform,
                  download=download)
-
+        self.train_data = self.data
+        self.train_labels = self.targets
         self.train_data = self.train_data[indexs]
         self.train_labels = np.array(self.train_labels)[indexs]
